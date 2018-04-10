@@ -2,13 +2,25 @@ import pygame
 import random
 
 class player:
-    def __init__(self,left_button,right_button,start_x,start_y,color):
+    def __init__(self,name,left_button,right_button, display_width, display_height,color):
+        self.name = name
         self.left_button = left_button
         self.right_button = right_button
-        self.x = start_x
-        self.y = start_y
-        self.pos = (start_x,start_y)
-        self.prev_pos = (start_x,start_y)
+
+        self.display_width = display_width
+        self.display_height = display_height
+        self.left = False
+        self.right = False
+        self.color = color
+        self.alive = True
+        self.victory_points = 0
+        self.restart()
+
+    def restart(self):
+        self.x = random.randrange(0,self.display_width)
+        self.y = random.randrange(0,self.display_height)
+        self.pos = (self.x,self.y)
+        self.prev_pos = self.pos
         self.speed = 5
         self.turn_speed = 1
         self.x_speed = random.randrange(-5,5)
@@ -16,12 +28,7 @@ class player:
             self.y_speed = self.x_speed - 5
         elif self.x_speed <= 0:
             self.y_speed = self.x_speed + 5
-
-        self.left = False
-        self.right = False
-        self.color = color
         self.alive = True
-        self.victory_points = 0
 
     def move(self, left, right):
         self.prev_pos = self.pos
