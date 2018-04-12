@@ -2,6 +2,7 @@ import pygame
 from player import *
 from player_setup import *
 import random
+import time
 
 
 pygame.init()
@@ -16,20 +17,36 @@ clock = pygame.time.Clock()
 pygame.display.set_caption('ACHTUNG DIE KURVE - Virre edition')
 
 class game:
-    def __init__(self, num_players):
-        self.num_players = num_players
+    def __init__(self, display_width, display_height, win_points):
+        self.num_players = 2
+        self.display_width = display_width
+        self.display_height = display_height
+        self.win_points = win_points
+        self.game_over = False
+        self.game_display = pygame.display.set_mode((self.display_width, self.display_height))
 
-    def text_objects(text, font):
-        text_surface = font.render(text, True, red)
+    def text_objects(self,text, font):
+        text_surface = font.render(text, True, RED)
         return text_surface, text_surface.get_rect()
 
-    def message_display(text, x, y, size = 15):
+    def message_display(self,text, x, y, size = 15):
         display_text = pygame.font.Font('freesansbold.ttf', size)
-        text_surf, text_rect = text_objects(text, display_text)
+        text_surf, text_rect = self.text_objects(text, display_text)
         text_rect.center = ((x, y))
-        game_display.blit(text_surf, text_rect)
+        self.game_display.blit(text_surf, text_rect)
         pygame.display.update()
-        time.sleep(2)
+
+    def blit_img(self,img_path, center_x_y, size):
+        img_temp = pygame.image.load(img_path)
+        img = pygame.transform.scale(img_temp, size)
+        img_rect = img.get_rect()
+        img_rect.center = (center_x_y)
+        self.game_display.blit(img, img_rect)
+
+    def check_for_victory(self):
+        for active_player in self.player_group.values():
+            if active_player.victory_points >= self.win_points:
+                self.game_over = True
 
     def create_score_board(self):
         text_size = 25
@@ -38,12 +55,12 @@ class game:
         font = pygame.font.SysFont(None, text_size)
         for active_player in self.player_group.values():
             score = font.render(active_player.name + ': ' + str(active_player.victory_points),
-                True, YELLOW)
-            game_display.blit(score, (x,y))
+                True, active_player.color)
+            self.game_display.blit(score, (x,y))
             y += text_size + 25
 
     def game_loop(self):
-        game_display.fill(BLACK)
+        self.game_display.fill(BLACK)
         filled_locations = []
         dead_players = 0
         active_players = self.player_group.copy()
@@ -62,13 +79,13 @@ class game:
 
                     if len(intersections) > 0:
                          active_player.alive = False
-                         pygame.draw.circle(game_display,  active_player.color,  intersections[0], 3)
+                         pygame.draw.circle(self.game_display,  active_player.color,  intersections[0], 3)
                          active_player.victory_points += self.num_players - len(active_players)
                          del active_players[player_name]
                     else:
-                         pygame.draw.circle(game_display,  active_player.color,  active_player.pos, 3)
+                         pygame.draw.circle(self.game_display,  active_player.color,  active_player.pos, 3)
 
-                    if active_player.x > display_width or active_player.x < 0 or active_player.y > display_height or active_player.y < 0:
+                    if active_player.x > self.display_width or active_player.x < 0 or active_player.y > self.display_height or active_player.y < 0:
                         active_player.alive = False
                         active_player.victory_points += self.num_players - len(active_players)
                         del active_players[player_name]
@@ -102,32 +119,66 @@ class game:
 
             clock.tick(20)
         active_players.values()[0].victory_points += self.num_players - 1
+        self.check_for_victory()
         self.game_intro()
 
     def create_players(self):
         self.player_group = {str(i): player( 'Player ' + str(i),player_setup[i][0], player_setup[i][1],
-                display_width, display_height, player_setup[i][2]) for i in range(0,self.num_players)}
+                self.display_width, self.display_height, player_setup[i][2]) for i in range(1,self.num_players + 1)}
 
 
     def game_intro(self):
-        game_display.fill(BLACK)
+        self.game_display.fill(BLACK)
         self.create_score_board()
+        if self.game_over == True:
+            self.message_display('GAME OVER', self.display_width/2, int(round(self.display_height/2)), size = 30)
+            time.sleep(2)
+            self.game_main_menu()
+        else:
+            for player_name, active_player in self.player_group.items():
+                active_player.restart()
+                pygame.draw.circle(self.game_display,  active_player.color,  active_player.pos, 3)
+            pygame.display.update()
+            running = True
+            while running:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        quit()
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_SPACE:
+                            self.game_loop()
+                            running = False
 
-        for player_name, active_player in self.player_group.items():
-            print active_player.name
-            active_player.restart()
-            active_player.alive = True
-            pygame.draw.circle(game_display,  active_player.color,  active_player.pos, 3)
-        pygame.display.update()
+    def game_main_menu(self):
+        self.game_over = False
+        self.game_display.fill(BLACK)
+        welcoming_img = self.blit_img('ACHTUNG.png',(self.display_width/2, self.display_height/3),(900, 300))
+        num_players_text = 'Number of players: '
         running = True
+        self.message_display(num_players_text + str(self.num_players), self.display_width/2, int(round(self.display_height/1.5)), size = 20)
         while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    quit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
-                        self.game_loop()
-achtung = game(2)
-achtung.create_players()
-achtung.game_intro()
+                self.game_display.fill(BLACK)
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        quit()
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_SPACE:
+                            self.create_players()
+                            self.game_intro()
+                            running = False
+                        if event.key == pygame.K_UP:
+                            self.num_players += 1
+                            self.game_display.fill(BLACK)
+                            self.blit_img('ACHTUNG.png',(self.display_width/2, self.display_height/3),(600, 200))
+                            self.message_display(num_players_text + str(self.num_players), self.display_width/2, int(round(self.display_height/1.5)), size = 20)
+
+                        if event.key == pygame.K_DOWN:
+                            self.num_players -= 1
+                            self.game_display.fill(BLACK)
+                            self.blit_img('ACHTUNG.png',(self.display_width/2, self.display_height/3),(600, 200))
+                            self.message_display(num_players_text + str(self.num_players), self.display_width/2, int(round(self.display_height/1.5)), size = 20)
+
+achtung = game(display_width, display_height, 5)
+achtung.game_main_menu()

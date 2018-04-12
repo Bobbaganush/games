@@ -14,6 +14,7 @@ class player:
         self.color = color
         self.alive = True
         self.victory_points = 0
+        self.won = False
         self.restart()
 
     def restart(self):
