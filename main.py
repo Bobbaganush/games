@@ -9,8 +9,8 @@ pygame.init()
 
 
 
-display_width = 1200
-display_height = 800
+display_width = 1600
+display_height = 1000
 
 game_display = pygame.display.set_mode((display_width, display_height))
 clock = pygame.time.Clock()
@@ -47,6 +47,15 @@ class game:
         for active_player in self.player_group.values():
             if active_player.victory_points >= self.win_points:
                 self.game_over = True
+
+    def render_main_menu(self):
+        num_players_text = 'Number of players: '
+        win_points_text = 'Victory points: '
+        welcome_img_size = (900,300)
+        self.game_display.fill(BLACK)
+        self.blit_img('ACHTUNG.png',(self.display_width/2, self.display_height/3),welcome_img_size)
+        self.message_display(num_players_text + str(self.num_players), self.display_width/2, int(round(self.display_height/1.5)), size = 20)
+        self.message_display(win_points_text + str(self.win_points), self.display_width/2, int(round(self.display_height/1.4)), size = 20)
 
     def create_score_board(self):
         text_size = 25
@@ -132,7 +141,7 @@ class game:
         self.create_score_board()
         if self.game_over == True:
             self.message_display('GAME OVER', self.display_width/2, int(round(self.display_height/2)), size = 30)
-            time.sleep(2)
+            time.sleep(3)
             self.game_main_menu()
         else:
             for player_name, active_player in self.player_group.items():
@@ -152,11 +161,8 @@ class game:
 
     def game_main_menu(self):
         self.game_over = False
-        self.game_display.fill(BLACK)
-        welcoming_img = self.blit_img('ACHTUNG.png',(self.display_width/2, self.display_height/3),(900, 300))
-        num_players_text = 'Number of players: '
+        self.render_main_menu()
         running = True
-        self.message_display(num_players_text + str(self.num_players), self.display_width/2, int(round(self.display_height/1.5)), size = 20)
         while running:
                 self.game_display.fill(BLACK)
                 for event in pygame.event.get():
@@ -170,15 +176,14 @@ class game:
                             running = False
                         if event.key == pygame.K_UP:
                             self.num_players += 1
-                            self.game_display.fill(BLACK)
-                            self.blit_img('ACHTUNG.png',(self.display_width/2, self.display_height/3),(600, 200))
-                            self.message_display(num_players_text + str(self.num_players), self.display_width/2, int(round(self.display_height/1.5)), size = 20)
-
                         if event.key == pygame.K_DOWN:
                             self.num_players -= 1
-                            self.game_display.fill(BLACK)
-                            self.blit_img('ACHTUNG.png',(self.display_width/2, self.display_height/3),(600, 200))
-                            self.message_display(num_players_text + str(self.num_players), self.display_width/2, int(round(self.display_height/1.5)), size = 20)
+                        if event.key == pygame.K_LEFT:
+                            self.win_points -= 1
+                        if event.key == pygame.K_RIGHT:
+                            self.win_points += 1
+
+                        self.render_main_menu()
 
 achtung = game(display_width, display_height, 5)
 achtung.game_main_menu()
