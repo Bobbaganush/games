@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 
 class player:
     def __init__(self,name,left_button,right_button, display_width, display_height,color):
@@ -15,6 +16,7 @@ class player:
         self.alive = True
         self.victory_points = 0
         self.won = False
+        self.rotate_degree = 0
         self.restart()
 
     def restart(self):
@@ -23,60 +25,35 @@ class player:
         self.pos = (self.x,self.y)
         self.prev_pos = self.pos
         self.speed = 5
-        self.turn_speed = 1
+        self.turn_speed = 12
         self.x_speed = random.randrange(-5,5)
-        if self.x_speed > 0:
-            self.y_speed = self.x_speed - 5
-        elif self.x_speed <= 0:
-            self.y_speed = self.x_speed + 5
         self.alive = True
 
     def move(self, left, right):
         self.prev_pos = self.pos
         if left:
-            if self.x_speed > 0 and self.y_speed >= 0:
-                self.y_speed -= self.turn_speed
-                self.x_speed += self.turn_speed
-            elif self.x_speed <= 0 and self.y_speed >= 0:
-                self.y_speed += self.turn_speed
-                self.x_speed += self.turn_speed
-            elif self.x_speed > 0 and self.y_speed < 0:
-                self.x_speed -= self.turn_speed
-                self.y_speed -= self.turn_speed
-            elif self.x_speed <= 0 and self.y_speed < 0:
-                self.x_speed -= self.turn_speed
-                self.y_speed += self.turn_speed
+            if self.rotate_degree < 360:
+                self.rotate_degree += self.turn_speed
+            else:
+                self.rotate_degree = 0
         if right:
-            if self.x_speed > 0 and self.y_speed >= 0:
-                self.y_speed += self.turn_speed
-                self.x_speed -= self.turn_speed
-            elif self.x_speed <= 0 and self.y_speed >= 0:
-                self.y_speed -= self.turn_speed
-                self.x_speed -= self.turn_speed
-            elif self.x_speed > 0 and self.y_speed < 0:
-                self.x_speed += self.turn_speed
-                self.y_speed += self.turn_speed
-            elif self.x_speed <= 0 and self.y_speed < 0:
-                self.x_speed += self.turn_speed
-                self.y_speed -= self.turn_speed
-
-        if self.x_speed > self.speed:
-            self.x_speed = self.speed
-        if self.y_speed > self.speed:
-            self.y_speed = self.speed
-        if self.x_speed < -self.speed:
-            self.x_speed = -self.speed
-        if self.y_speed < -self.speed:
-            self.y_speed = -self.speed
+            if self.rotate_degree > 0:
+                self.rotate_degree -= self.turn_speed
+            else:
+                self.rotate_degree = 360
 
         if self.alive == False:
-            self.x_speed = 0
-            self.y_speed = 0
-        self.x += self.x_speed
-        self.y += self.y_speed
-        self.pos = (self.x,self.y)
+            self.speed = 0
         self.left = False
         self.right = False
+        dx = math.cos(math.radians(self.rotate_degree))
+        dy = math.sin(-math.radians(self.rotate_degree))
+        if self.speed > 0:
+            self.pos = (self.pos[0] + dx * self.speed, self.pos[1] + dy * self.speed)
+            self.x = int(self.pos[0])
+            self.y = int(self.pos[1])
+            self.pos = (self.x,self.y)
+
 
     def get_passed_pixels(self):
         self.passed_pixels = []
