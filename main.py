@@ -9,8 +9,8 @@ pygame.init()
 
 
 
-display_width = 1600
-display_height = 1000
+display_width = 1500
+display_height = 900
 
 game_display = pygame.display.set_mode((display_width, display_height))
 clock = pygame.time.Clock()
@@ -86,6 +86,8 @@ class game:
                     active_player.get_passed_pixels()
                     intersections = [i for i in active_player.passed_pixels if i in filled_locations]
 
+
+
                     if len(intersections) > 0:
                          active_player.alive = False
                          pygame.draw.circle(self.game_display,  active_player.color,  intersections[0], 3)
@@ -127,6 +129,7 @@ class game:
             pygame.display.update()
 
             clock.tick(20)
+
         active_players.values()[0].victory_points += self.num_players - 1
         self.check_for_victory()
         self.game_intro()
